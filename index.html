@@ -1,0 +1,707 @@
+cat << 'EOF' > index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE M'S ENTERPRISE — Executive Command Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Dark Theme Variables (Default) */
+            --gold-primary: #D4AF37;
+            --gold-light: #F3E5AB;
+            --gold-dark: #AA7C11;
+            --bg-dark: #0A0A0C;
+            --bg-card: #121216;
+            --bg-sidebar: #0D0D11;
+            --border-gold: rgba(212, 175, 55, 0.25);
+            --border-hover: rgba(212, 175, 55, 0.6);
+            --text-heading: #F8F9FA;
+            --text-body: #A0A5B5;
+            --accent-green: #10B981;
+            --sidebar-width: 280px;
+        }
+
+        /* Light Theme Variables */
+        [data-theme="light"] {
+            --bg-dark: #F8F9FA;
+            --bg-card: #FFFFFF;
+            --bg-sidebar: #F1F3F5;
+            --border-gold: rgba(212, 175, 55, 0.4);
+            --border-hover: rgba(170, 124, 17, 0.8);
+            --text-heading: #1A1A1E;
+            --text-body: #4A4A52;
+            --accent-green: #059669;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+        body { background-color: var(--bg-dark); color: var(--text-body); font-family: 'Montserrat', sans-serif; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+        .gold-text {
+            color: var(--gold-primary);
+            background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header {
+            height: 70px; background: var(--bg-sidebar); border-bottom: 1px solid var(--border-gold);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+
+        .header-brand { display: flex; align-items: center; gap: 1rem; }
+        .menu-toggle { background: transparent; border: 1px solid var(--border-gold); color: var(--gold-primary); padding: 0.5rem 0.8rem; border-radius: 4px; cursor: pointer; }
+        .menu-toggle:hover { background: var(--gold-primary); color: var(--bg-dark); }
+        .brand-logo { font-family: 'Cinzel', serif; font-weight: 800; font-size: 1.2rem; letter-spacing: 2px; cursor: pointer; }
+
+        .header-controls { display: flex; align-items: center; gap: 1rem; }
+        
+        .theme-btn, .lang-select {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            color: var(--text-heading);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .theme-btn:hover, .lang-select:hover {
+            border-color: var(--gold-primary);
+        }
+
+        .live-clock { font-family: 'JetBrains Mono', monospace; color: var(--gold-primary); border: 1px solid var(--border-gold); padding: 0.3rem 0.8rem; border-radius: 4px; background: rgba(212, 175, 55, 0.05); font-size: 0.8rem; }
+
+        .app-container { display: flex; margin-top: 70px; min-height: calc(100vh - 70px - 180px); position: relative; }
+
+        .sidebar {
+            width: var(--sidebar-width); background: var(--bg-sidebar); border-right: 1px solid var(--border-gold);
+            position: fixed; top: 70px; bottom: 0; left: calc(-1 * var(--sidebar-width)); transition: left 0.3s ease; z-index: 999; overflow-y: auto; padding: 1.5rem 0;
+        }
+        .sidebar.sidebar-open { left: 0; }
+        .sidebar-section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--gold-primary); padding: 0 1.5rem 0.5rem 1.5rem; margin-top: 1rem; opacity: 0.8; }
+
+        .menu-item { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1.5rem; color: var(--text-body); text-decoration: none; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; font-size: 0.9rem; }
+        .menu-item:hover, .menu-item.active { background: rgba(212, 175, 55, 0.12); color: var(--text-heading); border-left-color: var(--gold-primary); }
+        .menu-item i { width: 20px; text-align: center; color: var(--gold-primary); }
+
+        main { flex: 1; padding: 2.5rem; transition: margin-left 0.3s ease; width: 100%; }
+        main.main-shifted { margin-left: var(--sidebar-width); }
+
+        .tab-content { display: none; animation: fadeIn 0.4s ease forwards; }
+        .tab-content.active-tab { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-header { margin-bottom: 2rem; border-bottom: 1px solid var(--border-gold); padding-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-end; }
+        .section-title { font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--text-heading); display: flex; align-items: center; gap: 0.8rem; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .metric-card { background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 6px; padding: 1.5rem; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .metric-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+        .metric-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+        .metric-value { font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700; color: var(--text-heading); }
+        .metric-sub { font-size: 0.75rem; color: var(--accent-green); margin-top: 0.4rem; }
+
+        .sub-card { background: var(--bg-card); border: 1px solid var(--border-gold); border-radius: 6px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .sub-card h3 { font-family: 'Cinzel', serif; color: var(--gold-primary); margin-bottom: 0.8rem; font-size: 1.3rem; }
+        .sub-card p { line-height: 1.6; margin-bottom: 1rem; }
+
+        .manager-tag { font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: var(--gold-primary); font-weight: 600; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .contact-info-card, .contact-form-card { background: var(--bg-card); border: 1px solid var(--border-gold); padding: 2rem; border-radius: 6px; }
+        .contact-item { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+        .contact-icon { color: var(--gold-primary); font-size: 1.2rem; margin-top: 0.2rem; }
+        .contact-detail h4 { color: var(--text-heading); margin-bottom: 0.2rem; font-size: 0.95rem; }
+        .contact-detail a, .contact-detail p { color: var(--text-body); text-decoration: none; font-size: 0.9rem; }
+
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; font-size: 0.85rem; color: var(--gold-primary); }
+        .form-group input, .form-group textarea { width: 100%; background: var(--bg-dark); border: 1px solid var(--border-gold); border-radius: 4px; padding: 0.8rem; color: var(--text-heading); font-family: inherit; outline: none; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--gold-primary); }
+
+        .btn-action { background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); color: #000; border: none; padding: 0.8rem 1.5rem; font-weight: 700; cursor: pointer; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.5rem; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+        .btn-action:hover { filter: brightness(1.1); box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+
+        .leadership-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+        .leader-card { background: var(--bg-card); border: 1px solid var(--border-gold); padding: 1.5rem; border-radius: 6px; text-align: center; }
+        .leader-avatar { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gold-primary); margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; background: var(--bg-sidebar); color: var(--gold-primary); font-weight: 700; }
+        .leader-card h3 { font-family: 'Cinzel', serif; color: var(--text-heading); font-size: 1rem; margin-bottom: 0.4rem; }
+        .leader-title { color: var(--gold-primary); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .contract-viewer { background: var(--bg-dark); border: 1px solid var(--border-gold); padding: 1.5rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; white-space: pre-wrap; line-height: 1.6; max-height: 400px; overflow-y: auto; color: var(--text-heading); }
+
+        footer { background: var(--bg-sidebar); border-top: 1px solid var(--border-gold); padding: 3rem 2rem 1.5rem 2rem; margin-top: auto; }
+        .footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 2rem; margin-bottom: 2rem; }
+        .footer-brand h3 { font-family: 'Cinzel', serif; margin-bottom: 0.8rem; }
+        .footer-col h4 { color: var(--gold-primary); font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 0.5rem; }
+        .footer-links a { color: var(--text-body); text-decoration: none; font-size: 0.85rem; cursor: pointer; }
+        .footer-links a:hover { color: var(--gold-primary); }
+
+        .footer-bottom { max-width: 1200px; margin: 0 auto; border-top: 1px solid var(--border-gold); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+
+        .sidebar-overlay { position: fixed; top: 70px; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 998; display: none; }
+        .sidebar-overlay.active { display: block; }
+
+        @media (max-width: 900px) { .contact-grid { grid-template-columns: 1fr; } .footer-grid { grid-template-columns: 1fr 1fr; } main.main-shifted { margin-left: 0; } }
+        @media (max-width: 600px) { .footer-grid { grid-template-columns: 1fr; } .header-controls .live-clock { display: none; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-brand">
+            <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="brand-logo gold-text" onclick="switchTab('dashboard')">THE M'S ENTERPRISE</div>
+        </div>
+        
+        <div class="header-controls">
+            <!-- Theme Toggle Button -->
+            <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Switch Light/Dark Theme">
+                <i class="fa-solid fa-sun" id="themeIcon"></i> <span id="themeLabel">Light</span>
+            </button>
+
+            <!-- Language Selector -->
+            <select class="lang-select" id="langSelect" onchange="changeLanguage(this.value)">
+                <option value="en">English (EN)</option>
+                <option value="ha">Hausa (HA)</option>
+                <option value="yo">Yorùbá (YO)</option>
+                <option value="ig">Igbo (IG)</option>
+                <option value="fr">Français (FR)</option>
+            </select>
+
+            <span class="live-clock" id="liveClock"></span>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="app-container">
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-section-title" data-i18n="secOverview">Overview</div>
+            <div class="menu-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
+                <i class="fa-solid fa-chart-line"></i>
+                <span data-i18n="navDashboard">Executive Dashboard</span>
+            </div>
+            <div class="menu-item" data-tab="contact" onclick="switchTab('contact')">
+                <i class="fa-solid fa-address-book"></i>
+                <span data-i18n="navDirectory">Executive Directory</span>
+            </div>
+
+            <div class="sidebar-section-title" data-i18n="secSubsidiaries">Subsidiaries</div>
+            <div class="menu-item" data-tab="energy" onclick="switchTab('energy')">
+                <i class="fa-solid fa-solar-panel"></i>
+                <span data-i18n="navEnergy">Energy & Solar</span>
+            </div>
+            <div class="menu-item" data-tab="marketing" onclick="switchTab('marketing')">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span data-i18n="navMarketing">Marketing & Advertising</span>
+            </div>
+            <div class="menu-item" data-tab="realty" onclick="switchTab('realty')">
+                <i class="fa-solid fa-city"></i>
+                <span data-i18n="navRealty">Real Estate</span>
+            </div>
+            <div class="menu-item" data-tab="tech" onclick="switchTab('tech')">
+                <i class="fa-solid fa-microchip"></i>
+                <span data-i18n="navTech">Technology</span>
+            </div>
+
+            <div class="sidebar-section-title" data-i18n="secFintech">Fintech</div>
+            <div class="menu-item" data-tab="vault" onclick="switchTab('vault')">
+                <i class="fa-solid fa-vault"></i>
+                <span data-i18n="navVault">Vault X Treasury</span>
+            </div>
+
+            <div class="sidebar-section-title" data-i18n="secAffairs">Corporate Affairs</div>
+            <div class="menu-item" data-tab="governance" onclick="switchTab('governance')">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span data-i18n="navLeadership">Leadership Board</span>
+            </div>
+            <div class="menu-item" data-tab="contracts" onclick="switchTab('contracts')">
+                <i class="fa-solid fa-file-contract"></i>
+                <span data-i18n="navLegal">Legal & Disclosures</span>
+            </div>
+        </aside>
+
+        <main id="mainContent">
+
+            <!-- TAB 1: EXECUTIVE DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content active-tab">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-chart-line" style="color: var(--gold-primary);"></i>
+                        <span id="activeTitle" data-i18n="navDashboard">Executive Dashboard</span>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card" onclick="switchTab('governance')">
+                        <div class="metric-title gold-text" data-i18n="cardSubsidiaries">Consolidated Subsidiaries</div>
+                        <div class="metric-value">4 Divisions</div>
+                        <div class="metric-sub"><i class="fa-solid fa-circle-check"></i> <span data-i18n="subManagers">Active Executive Managers</span></div>
+                    </div>
+                    <div class="metric-card" onclick="switchTab('vault')">
+                        <div class="metric-title gold-text" data-i18n="cardPlatforms">Active Platforms</div>
+                        <div class="metric-value">Vault X / Go Stack</div>
+                        <div class="metric-sub"><i class="fa-solid fa-code-branch"></i> <span data-i18n="subSystems">Backend Systems Active</span></div>
+                    </div>
+                    <div class="metric-card" onclick="switchTab('tech')">
+                        <div class="metric-title gold-text" data-i18n="cardBrand">Enterprise Brand</div>
+                        <div class="metric-value">THE M'S</div>
+                        <div class="metric-sub"><i class="fa-solid fa-globe"></i> Multi-Sector Enterprise</div>
+                    </div>
+                </div>
+
+                <div class="sub-card">
+                    <h3>THE M'S ENTERPRISE Overview</h3>
+                    <p data-i18n="overviewText">THE M'S Enterprise operates across four core verticals led by dedicated executive managers: Clean Solar & Energy Infrastructure, Strategic Marketing & Advertising, Real Estate Portfolio, and High-Performance Software Systems.</p>
+                </div>
+            </div>
+
+            <!-- TAB 2: EXECUTIVE DIRECTORY & CONTACT -->
+            <div id="tab-contact" class="tab-content">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-address-book" style="color: var(--gold-primary);"></i>
+                        <span data-i18n="navDirectory">Executive Contact Directory</span>
+                    </div>
+                </div>
+
+                <div class="contact-grid">
+                    <div class="contact-info-card">
+                        <h3 style="font-family: 'Cinzel', serif; color: var(--gold-primary); margin-bottom: 1.5rem;" data-i18n="corpAccess">Corporate Access Points</h3>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon"><i class="fa-solid fa-user-shield"></i></div>
+                            <div class="contact-detail">
+                                <h4 data-i18n="roleChairman">Founder & Executive Chairman</h4>
+                                <p><strong>Mubarak Mohammed (Mash)</strong></p>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+                            <div class="contact-detail">
+                                <h4 data-i18n="labelEmail">Executive Communications</h4>
+                                <a href="mailto:mubarakmohammedmash@gmail.com">mubarakmohammedmash@gmail.com</a>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+                            <div class="contact-detail">
+                                <h4 data-i18n="labelPhone">Direct Line</h4>
+                                <a href="tel:+2349038483018">+234 903 848 3018</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-form-card">
+                        <h3 style="font-family: 'Cinzel', serif; color: var(--text-heading); margin-bottom: 1.2rem;" data-i18n="formTitle">Transmit Message</h3>
+                        <form onsubmit="submitForm(event)">
+                            <div class="form-group">
+                                <label data-i18n="formName">Your Name / Enterprise</label>
+                                <input type="text" id="formName" required>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="formEmail">Your Email Address</label>
+                                <input type="email" id="formEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="formSubject">Subject</label>
+                                <input type="text" id="formSubject" required>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="formMessage">Message Content</label>
+                                <textarea id="formMessage" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" id="submitBtn" class="btn-action" style="width: 100%; justify-content: center;">
+                                <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btnSend">Send Message</span>
+                            </button>
+                        </form>
+                        <div id="statusMessage" style="margin-top: 1rem; font-size: 0.85rem; text-align: center;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: ENERGY DIVISION -->
+            <div id="tab-energy" class="tab-content">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-solar-panel" style="color: var(--gold-primary);"></i>
+                        <span data-i18n="navEnergy">Energy & Solar Division</span>
+                    </div>
+                </div>
+
+                <div class="sub-card">
+                    <h3>Solar, Renewable & Clean Energy Infrastructure</h3>
+                    <div class="manager-tag"><i class="fa-solid fa-user-tie"></i> <span data-i18n="mgrEnergy">MANAGER: MUBARAK LAWAL</span></div>
+                    <p data-i18n="descEnergy">Drives clean energy systems, commercial solar panel installations, microgrid storage solutions, and renewable energy distribution for enterprise and commercial facilities.</p>
+                </div>
+            </div>
+
+            <!-- TAB 4: MARKETING & ADVERTISING -->
+            <div id="tab-marketing" class="tab-content">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-bullhorn" style="color: var(--gold-primary);"></i>
+                        <span data-i18n="navMarketing">Marketing & Advertising</span>
+                    </div>
+                </div>
+
+                <div class="sub-card">
+                    <h3>Brand Strategy & Strategic Campaigns</h3>
+                    <p data-i18n="descMarketing">Drives brand development, digital advertising campaigns, corporate public relations, and high-impact media strategies.</p>
+                </div>
+            </div>
+
+            <!-- TAB 5: REAL ESTATE -->
+            <div id="tab-realty" class="tab-content">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-city" style="color: var(--gold-primary);"></i>
+                        <span data-i18n="navRealty">Real Estate Division</span>
+                    </div>
+                </div>
+
+                <div class="sub-card">
+                    <h3>Property Acquisition & Asset Management</h3>
+                    <div class="manager-tag"><i class="fa-solid fa-user-tie"></i> <span data-i18n="mgrRealty">MANAGER: MOHAMMED IDI MOHAMMED</span></div>
+                    <p data-i18n="descRealty">Oversees legal title acquisition, residential property development, commercial structures, and unencumbered land asset custody.</p>
+                </div>
+            </div>
+
+            <!-- TAB 6: TECHNOLOGY -->
+            <div id="tab-tech" class="tab-content">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-microchip" style="color: var(--gold-primary);"></i>
+                        <span data-i18n="navTech">Technology Division</span>
+                    </div>
+                </div>
+
+                <div class="sub-card">
+                    <h3>Software Systems & Backend Engineering</h3>
+                    <div class="manager-tag"><i class="fa-solid fa-user-tie"></i> <span data-i18n="mgrTech">MANAGER: ABRAHAM DAVID</span></div>
+                    <p data-i18n="descTech">Directs software platform engineering, Go microservices architecture, automated text engines, and production tooling.</p>
+                </div>
+            </div>
+
+            <!-- TAB 7: VAULT X TREASURY -->
+            <div id="tab-vault" class="tab-content">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-vault" style="color: var(--gold-primary);"></i>
+                        <span data-i18n="navVault">Vault X Treasury</span>
+                    </div>
+                </div>
+
+                <div class="sub-card">
+                    <h3>Automated Savings Pool & Financial Engine</h3>
+                    <p data-i18n="descVault">Proprietary financial platform managing digitized Esusu/rotating savings pools, real-time ledger accounting, and capital pool automation.</p>
+                </div>
+            </div>
+
+            <!-- TAB 8: GOVERNANCE & LEADERSHIP -->
+            <div id="tab-governance" class="tab-content">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-shield-halved" style="color: var(--gold-primary);"></i>
+                        <span data-i18n="navLeadership">Leadership Board</span>
+                    </div>
+                </div>
+
+                <div class="leadership-grid">
+                    <div class="leader-card">
+                        <div class="leader-avatar">M</div>
+                        <h3>Mubarak Mohammed (Mash)</h3>
+                        <div class="leader-title" data-i18n="roleChairman">Founder & Chairman</div>
+                    </div>
+                    <div class="leader-card">
+                        <div class="leader-avatar">ML</div>
+                        <h3>Mubarak Lawal</h3>
+                        <div class="leader-title" data-i18n="mgrEnergyTitle">Manager — Energy & Solar</div>
+                    </div>
+                    <div class="leader-card">
+                        <div class="leader-avatar">AD</div>
+                        <h3>Abraham David</h3>
+                        <div class="leader-title" data-i18n="mgrTechTitle">Manager — Technology</div>
+                    </div>
+                    <div class="leader-card">
+                        <div class="leader-avatar">MIM</div>
+                        <h3>Mohammed Idi Mohammed</h3>
+                        <div class="leader-title" data-i18n="mgrRealtyTitle">Manager — Real Estate</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 9: LEGAL DISCLOSURES -->
+            <div id="tab-contracts" class="tab-content">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-file-contract" style="color: var(--gold-primary);"></i>
+                        <span data-i18n="navLegal">Legal & Disclosures</span>
+                    </div>
+                </div>
+
+                <div class="contract-viewer">
+BILL OF SALE & EQUIPMENT PURCHASE AGREEMENT
+
+BUYER: Mubarak Mohammed ("Mash") / THE M'S ENTERPRISE
+SELLER: Victor Ondugbe Aba
+ITEM DETAILS: HP Core i5 High-Performance Laptop Workstation
+
+1. WARRANTIES: Equipment transferred clear of encumbrances.
+2. IP INTEGRITY: Codebase and software assets remain intellectual property of THE M'S ENTERPRISE.
+3. GOVERNING LAW: Federal Republic of Nigeria.
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3 class="gold-text">THE M'S ENTERPRISE</h3>
+                <p data-i18n="footerBrandDesc">Centralized corporate platform for multi-sector management in Energy & Solar, Marketing & Advertising, Real Estate, and Technology.</p>
+            </div>
+            <div class="footer-col">
+                <h4 data-i18n="footerDivisions">Divisions</h4>
+                <ul class="footer-links">
+                    <li><a onclick="switchTab('energy')" data-i18n="navEnergy">Energy & Solar</a></li>
+                    <li><a onclick="switchTab('marketing')" data-i18n="navMarketing">Marketing & Advertising</a></li>
+                    <li><a onclick="switchTab('realty')" data-i18n="navRealty">Real Estate</a></li>
+                    <li><a onclick="switchTab('tech')" data-i18n="navTech">Technology</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 data-i18n="footerPlatforms">Platforms</h4>
+                <ul class="footer-links">
+                    <li><a onclick="switchTab('vault')" data-i18n="navVault">Vault X Treasury</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 data-i18n="secAffairs">Governance</h4>
+                <ul class="footer-links">
+                    <li><a onclick="switchTab('governance')" data-i18n="navLeadership">Leadership Board</a></li>
+                    <li><a onclick="switchTab('contracts')" data-i18n="navLegal">Legal & Disclosures</a></li>
+                    <li><a onclick="switchTab('contact')" data-i18n="navDirectory">Executive Directory</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>&copy; 2026 THE M'S ENTERPRISE. All Rights Reserved.</div>
+            <div>Lagos, Nigeria</div>
+        </div>
+    </footer>
+
+    <script>
+        /* INTERNATIONALIZATION (I18N) TRANSLATIONS */
+        const translations = {
+            en: {
+                secOverview: "Overview", navDashboard: "Executive Dashboard", navDirectory: "Executive Directory",
+                secSubsidiaries: "Subsidiaries", navEnergy: "Energy & Solar", navMarketing: "Marketing & Advertising",
+                navRealty: "Real Estate", navTech: "Technology", secFintech: "Fintech", navVault: "Vault X Treasury",
+                secAffairs: "Corporate Affairs", navLeadership: "Leadership Board", navLegal: "Legal & Disclosures",
+                cardSubsidiaries: "Consolidated Subsidiaries", subManagers: "Active Executive Managers",
+                cardPlatforms: "Active Platforms", subSystems: "Backend Systems Active", cardBrand: "Enterprise Brand",
+                overviewText: "THE M'S Enterprise operates across four core verticals led by dedicated executive managers: Clean Solar & Energy Infrastructure, Strategic Marketing & Advertising, Real Estate Portfolio, and High-Performance Software Systems.",
+                corpAccess: "Corporate Access Points", roleChairman: "Founder & Executive Chairman", labelEmail: "Executive Communications",
+                labelPhone: "Direct Line", formTitle: "Transmit Message", formName: "Your Name / Enterprise",
+                formEmail: "Your Email Address", formSubject: "Subject", formMessage: "Message Content", btnSend: "Send Message",
+                mgrEnergy: "MANAGER: MUBARAK LAWAL", descEnergy: "Drives clean energy systems, commercial solar panel installations, microgrid storage solutions, and renewable energy distribution for enterprise and commercial facilities.",
+                descMarketing: "Drives brand development, digital advertising campaigns, corporate public relations, and high-impact media strategies.",
+                mgrRealty: "MANAGER: MOHAMMED IDI MOHAMMED", descRealty: "Oversees legal title acquisition, residential property development, commercial structures, and unencumbered land asset custody.",
+                mgrTech: "MANAGER: ABRAHAM DAVID", descTech: "Directs software platform engineering, Go microservices architecture, automated text engines, and production tooling.",
+                descVault: "Proprietary financial platform managing digitized Esusu/rotating savings pools, real-time ledger accounting, and capital pool automation.",
+                mgrEnergyTitle: "Manager — Energy & Solar", mgrTechTitle: "Manager — Technology", mgrRealtyTitle: "Manager — Real Estate",
+                footerBrandDesc: "Centralized corporate platform for multi-sector management in Energy & Solar, Marketing & Advertising, Real Estate, and Technology.",
+                footerDivisions: "Divisions", footerPlatforms: "Platforms"
+            },
+            ha: {
+                secOverview: "Bayani", navDashboard: "Cibiyar Gudanarwa", navDirectory: "Adireshin Shugabanni",
+                secSubsidiaries: "Rassan Kamfani", navEnergy: "Makamashi da Hasken Rana", navMarketing: "Talla da Bada Sanarwa",
+                navRealty: "Kayan Aiki da Filaye", navTech: "Fasaha da Siyarwa", secFintech: "Fintech da Kudade", navVault: "Rambun Vault X",
+                secAffairs: "Al'amuran Kamfani", navLeadership: "Hukumar Shugabanni", navLegal: "Sarrafa Doka",
+                cardSubsidiaries: "Rassan Kamfani Hade", subManagers: "Manajoji Masu Aiki", cardBrand: "Alamar Kamfani",
+                overviewText: "THE M'S Enterprise tana gudanar da ayyuka a bangarori hudu karkashin kwararrun manajoji: Makamashin Rana, Talla, Real Estate, da Fasahar Kwamfuta.",
+                formTitle: "Aika Sako", btnSend: "Aika Sako Yanzu", footerDivisions: "Bangarori"
+            },
+            yo: {
+                secOverview: "Àpapọ̀ Aṣẹ", navDashboard: "Pẹpẹ Aṣẹ", navDirectory: "Àdírẹ́sì Àwọn Olori",
+                secSubsidiaries: "Àwọn Ẹka", navEnergy: "Agbára & Iná Oòrùn", navMarketing: "Taja & Sọfọ",
+                navRealty: "Agbègbè Ilẹ̀ & Ilé", navTech: "Ẹ̀rọ Hánhán", secFintech: "Eto Ináwó", navVault: "Àpótí Vault X",
+                secAffairs: "Ọ̀ràn Àjọ", navLeadership: "Àwọn Aṣáájú", navLegal: "Ofin & Itusilẹ",
+                formTitle: "Rán Sẹ́ṣẹ́", btnSend: "Rán Sẹ́ṣẹ́ Nísinyìí", footerDivisions: "Àwọn Ẹka"
+            },
+            ig: {
+                secOverview: "Isi Okwu", navDashboard: "Kọmputa Isiala", navDirectory: "Akwụkwọ Ndị Ndoli",
+                secSubsidiaries: "Alaka Ụlọọrụ", navEnergy: "Ihe Ọkụ & Anyanwụ", navMarketing: "Mgbasa Ozi",
+                navRealty: "Ala na Ụlọ", navTech: "Teknụzụ", secFintech: "Ego Digital", navVault: "Ego Vault X",
+                secAffairs: "Mmekọrịta", navLeadership: "Ndị Isi", navLegal: "Iwu na Nkwupụta",
+                formTitle: "Thapụ Ozi", btnSend: "Thapụ Ozi Ugbua", footerDivisions: "Alaka"
+            },
+            fr: {
+                secOverview: "Aperçu Global", navDashboard: "Tableau de Bord", navDirectory: "Annuaire Exécutif",
+                secSubsidiaries: "Filiales", navEnergy: "Énergie & Solaire", navMarketing: "Marketing & Publicité",
+                navRealty: "Immobilier", navTech: "Technologie", secFintech: "Fintech", navVault: "Trésorerie Vault X",
+                secAffairs: "Affaires Corporatives", navLeadership: "Conseil d'Administration", navLegal: "Aspects Légaux",
+                cardSubsidiaries: "Filiales Consolidées", subManagers: "Directeurs Exécutifs Actifs",
+                overviewText: "THE M'S Enterprise opère dans quatre secteurs clés : Énergie Solaire, Marketing Stratégique, Immobilier et Systèmes Logiciels Haute Performance.",
+                formTitle: "Transmettre un Message", btnSend: "Envoyer le Message", footerDivisions: "Divisions"
+            }
+        };
+
+        /* THEME TOGGLE LOGIC */
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeIcon = document.getElementById('themeIcon');
+            const themeLabel = document.getElementById('themeLabel');
+            
+            if (newTheme === 'light') {
+                themeIcon.className = 'fa-solid fa-moon';
+                themeLabel.textContent = 'Dark';
+            } else {
+                themeIcon.className = 'fa-solid fa-sun';
+                themeLabel.textContent = 'Light';
+            }
+        }
+
+        // Apply saved theme on load
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            if (savedTheme === 'light') {
+                document.addEventListener("DOMContentLoaded", () => {
+                    const icon = document.getElementById('themeIcon');
+                    const label = document.getElementById('themeLabel');
+                    if (icon) icon.className = 'fa-solid fa-moon';
+                    if (label) label.textContent = 'Dark';
+                });
+            }
+        })();
+
+        /* LANGUAGE CHANGE LOGIC */
+        function changeLanguage(langKey) {
+            const dictionary = translations[langKey] || translations['en'];
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dictionary[key]) {
+                    el.textContent = dictionary[key];
+                }
+            });
+        }
+
+        /* NAVIGATION LOGIC */
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('sidebar-open');
+            mainContent.classList.toggle('main-shifted');
+            overlay.classList.toggle('active');
+        }
+
+        function switchTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active-tab'));
+
+            const targetTab = document.getElementById('tab-' + tabId);
+            if (targetTab) {
+                targetTab.classList.add('active-tab');
+            }
+
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-tab') === tabId) {
+                    item.classList.add('active');
+                    const span = item.querySelector('span');
+                    if (span) {
+                        const activeTitle = document.getElementById('activeTitle');
+                        if (activeTitle) activeTitle.innerText = span.innerText;
+                    }
+                }
+            });
+
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('sidebar-open') && window.innerWidth <= 900) {
+                toggleSidebar();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('statusMessage');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Dispatching...';
+            status.textContent = '';
+
+            const payload = {
+                name: document.getElementById('formName').value,
+                email: document.getElementById('formEmail').value,
+                subject: document.getElementById('formSubject').value,
+                message: document.getElementById('formMessage').value
+            };
+
+            try {
+                const res = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    status.style.color = '#4ade80';
+                    status.textContent = 'Message sent successfully!';
+                    e.target.reset();
+                } else {
+                    status.style.color = '#f87171';
+                    status.textContent = data.message || 'Error sending message.';
+                }
+            } catch (err) {
+                status.style.color = '#f87171';
+                status.textContent = 'Network error. Please try again.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span data-i18n="btnSend">Send Message</span>';
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' };
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) clockEl.innerText = now.toLocaleDateString('en-US', options);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
+EOF
